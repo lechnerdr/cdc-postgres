@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: cdc-postgres
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+topic:
+  name: topic-replicacao
+
+logging:
+  level:
+    root: INFO
+    org:
+      springdoc: ERROR
+      springframework:
+        web: ERROR
+        kafka: ERROR
+      apache:
+        kafka: ERROR

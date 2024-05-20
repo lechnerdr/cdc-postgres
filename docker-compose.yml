@@ -1,0 +1,72 @@
+version: '3.9'
+
+services:
+
+  zookeeper:
+    hostname: zookeeper
+    image: confluentinc/cp-zookeeper:latest
+    restart: always
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    ports: 
+      - "22181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:  
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    restart: always
+    ports:
+      - "9001:8080"
+    depends_on:
+      - kafka    
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      DYNAMIC_CONFIG_ENABLED: 'true'
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+     - pgdata:/var/lib/postgresql/data
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "pgadmin@pgadmin.com"
+      PGADMIN_DEFAULT_PASSWORD: "PgAdmin8F4s!"
+    volumes:
+      - pgadmin_data:/pgadmin
+    ports:
+      - "5051:80"
+
+volumes:
+  pgdata:
+  pgadmin_data:
